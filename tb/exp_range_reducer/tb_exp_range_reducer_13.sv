@@ -1,6 +1,8 @@
-module tb_exp_range_reducer_7;
+`timescale 1ns/1ps
 
-    localparam integer N = 7;
+module tb_exp_range_reducer_13;
+
+    localparam integer N = 13;
 
     logic clk;
     logic rst;
@@ -43,34 +45,59 @@ module tb_exp_range_reducer_7;
     always #5 clk = ~clk;
 
     // ============================================================
-    // Input values
+    // Test vector
     //
-    // x = [1.5, 3.0, 2.0, 5.0, 4.0, 0.5, 2.5]
+    // Maximum = 8.0
     //
-    // Expected MAX = 5.0
+    // x:
+    //  1.0
+    //  3.0
+    //  2.0
+    //  7.0
+    //  4.0
+    //  5.5
+    //  8.0
+    //  2.5
+    //  6.0
+    //  0.5
+    //  3.5
+    //  7.5
+    //  1.5
     //
-    // Expected reduced values:
+    // Expected reduced:
     //
-    // -3.5
-    // -2.0
-    // -3.0
-    //  0.0
+    // -7.0
+    // -5.0
+    // -6.0
     // -1.0
-    // -4.5
+    // -4.0
     // -2.5
+    //  0.0
+    // -5.5
+    // -2.0
+    // -7.5
+    // -4.5
+    // -0.5
+    // -6.5
     // ============================================================
 
     logic [31:0] test_data [0:N-1];
 
     initial begin
 
-        test_data[0] = 32'h3FC00000; //  1.5
-        test_data[1] = 32'h40400000; //  3.0
-        test_data[2] = 32'h40000000; //  2.0
-        test_data[3] = 32'h40A00000; //  5.0
-        test_data[4] = 32'h40800000; //  4.0
-        test_data[5] = 32'h3F000000; //  0.5
-        test_data[6] = 32'h40200000; //  2.5
+        test_data[0]  = 32'h3F800000; // 1.0
+        test_data[1]  = 32'h40400000; // 3.0
+        test_data[2]  = 32'h40000000; // 2.0
+        test_data[3]  = 32'h40E00000; // 7.0
+        test_data[4]  = 32'h40800000; // 4.0
+        test_data[5]  = 32'h40B00000; // 5.5
+        test_data[6]  = 32'h41000000; // 8.0
+        test_data[7]  = 32'h40200000; // 2.5
+        test_data[8]  = 32'h40C00000; // 6.0
+        test_data[9]  = 32'h3F000000; // 0.5
+        test_data[10] = 32'h40600000; // 3.5
+        test_data[11] = 32'h40F00000; // 7.5
+        test_data[12] = 32'h3FC00000; // 1.5
 
     end
 
@@ -94,7 +121,7 @@ module tb_exp_range_reducer_7;
         rst = 1'b0;
 
         // --------------------------------------------------------
-        // Start transaction
+        // Start
         // --------------------------------------------------------
 
         @(posedge clk);
@@ -106,25 +133,25 @@ module tb_exp_range_reducer_7;
         start = 1'b0;
 
         // --------------------------------------------------------
-        // Send N inputs
+        // Send 13 inputs
         // --------------------------------------------------------
 
         for (i = 0; i < N; i = i + 1) begin
 
-    @(negedge clk);
+            @(posedge clk);
 
-    data_in  = test_data[i];
-    valid_in = 1'b1;
+            data_in  = test_data[i];
+            valid_in = 1'b1;
 
-end
+        end
 
-@(negedge clk);
+        @(posedge clk);
 
-valid_in = 1'b0;
-data_in  = 32'h00000000;
+        valid_in = 1'b0;
+        data_in  = 32'h00000000;
 
         // --------------------------------------------------------
-        // Wait for outputs
+        // Wait for completion
         // --------------------------------------------------------
 
         wait(done);
@@ -136,7 +163,7 @@ data_in  = 32'h00000000;
     end
 
     // ============================================================
-    // Monitor outputs
+    // Monitor
     // ============================================================
 
     always @(posedge clk) begin
